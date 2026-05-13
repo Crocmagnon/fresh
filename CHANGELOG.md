@@ -1,5 +1,61 @@
 # Release Notes
 
+## 0.3.6
+
+This version includes a major internal refactoring to support multiple windows in a single Fresh process. The work will be used to add a multi-window orchestrator in a future version.
+
+### Features
+
+* **Go to line with selection** (#1764, thanks @PavelLoparev!): New action extends the selection from cursor to target line. Supports absolute and relative (`+10`) jumps.
+
+* **File explorer "follow active buffer"** (#1569, #1803, thanks @ko3n1g!): New `file_explorer.follow_active_buffer` setting (default off). When on, switching tabs expands and highlights the corresponding file without stealing focus.
+
+* **Live Diff**: Near-identical lines now render as modified lines, with new words decorated as underline (instead of two separate add/remove rows). Deletion virtual lines get gutter markers. Fixed live diff colors in `terminal` theme.
+
+* **Auto-start `vi_mode`** (#1086, reported by @jmcblane): Vi mode plugin now exposes `toggle / enable / disable` so `init.ts` can flip vi mode at startup. Add this to your `init.ts` to enable: `editor.getPluginApi("vi-mode")?.enable();`.
+
+In the future I plan to add a way for plugins to register custom config sections in the Settings UI, and then enabling vi-mode auto-start will be available through the UI.
+
+### Improvements
+
+* **openSUSE install instructions** (#1897, thanks @ilmanzo!) added to the README.
+
+* **Quick Open ranking**: Matches at the start of a path segment now beat arbitrary substring hits — `ts` surfaces `tsconfig.json` and `tsc/...` before random `.ts` files.
+
+* **Search & Replace no longer freezes** on result sets in the thousands.
+
+* **Rust code actions** (#1915): `rust-analyzer` now returns `WorkspaceEdit`-based assists like "Fill struct fields" instead of "No code actions available" — Fresh wasn't advertising the capability.
+
+* **Status-bar indicator menus**: Clicking another indicator's icon dismisses the currently-open menu instead of stacking a second one on top.
+
+* **LSP-Servers popup is extensible**: Plugins (starting with the bundled `rust-lsp`) can contribute their own rows.
+
+* **`terminal` built-in theme** (#1914): Diff backgrounds no longer collide with syntax foregrounds, so keywords on deletion lines and strings on addition lines stay readable on terminals (e.g. xfce-terminal) where each ANSI palette index renders identically for fg and bg.
+
+* **Dashboard** matches the editor background and no longer slides in.
+
+* **AppImage install script** has error handling and a `/tmp` fallback so it no longer silently fails when the target directory isn't writable.
+
+### Bug Fixes
+
+* **Crash on startup from a corrupt workspace** (#1939, reported by @zdooder): Restoring a session whose persisted split pointed at a buffer no longer in the buffer map crashed in `render.rs`. The active-buffer pointer is now validated and falls back to a live buffer if it's stale.
+
+* **Completion popup + multicursor** (#1901, reported by @dtwilliamson): Typing a word character or `Backspace` while the popup was open only edited the primary cursor — secondary cursors silently went out of sync after the first keystroke. Accepting a completion now also applies at every cursor.
+
+* **LSP indicator click** (#1941): Bugs fixed: plugin popup stacked under the built-in one; plugin popup ignored the active theme's `popup_bg`; state stayed stale after the LSP process was killed externally; "Disable LSP" didn't actually stop the running server; repeated clicks stacked further popups.
+
+* **Scrollbar theme overrides** (#1554, reported by @klonuo): User themes setting `ui.scrollbar_track_fg`, `ui.scrollbar_track_hover_fg`, or `ui.scrollbar_thumb_hover_fg` had their overrides silently dropped.
+
+* **Utility dock routing** (#1932): `Ctrl+P` → filename now opens the file in the editor area instead of inside the bottom dock when the dock has focus. The split tab-bar `□` button now maximizes the split you clicked, not the active one.
+
+* **Tab drag**: Dropping a tab onto a fresh split (e.g. a Search & Replace result row) no longer panics on the next keystroke.
+
+* **File explorer**: A directory whose `.gitignore` filters out all its contents (e.g. `build/` with `*` inside) stays visible when expanded.
+
+* **Live Diff visual-line motion**: `Down`/`Up` no longer freezes when traversing a deletion block that starts with a blank line.
+
+* **`S-Tab` plugin bindings** now register correctly (terminals deliver Shift+Tab as `BackTab`).
+
 ## 0.3.5
 
 ### Improvements
