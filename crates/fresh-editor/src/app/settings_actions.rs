@@ -312,11 +312,11 @@ impl Editor {
 
         // Create parent directory if needed
         if let Some(parent) = path.parent() {
-            self.authority.filesystem.create_dir_all(parent)?;
+            self.authority().filesystem.create_dir_all(parent)?;
         }
 
         // Create file with template if it doesn't exist
-        if !self.authority.filesystem.exists(&path) {
+        if !self.authority().filesystem.exists(&path) {
             let template = match layer {
                 ConfigLayer::User => {
                     r#"{
@@ -347,7 +347,7 @@ impl Editor {
                 }
                 ConfigLayer::System => unreachable!(),
             };
-            self.authority
+            self.authority()
                 .filesystem
                 .write_file(&path, template.as_bytes())?;
         }
