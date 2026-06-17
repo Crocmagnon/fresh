@@ -141,6 +141,12 @@ pub enum AsyncMessage {
         locations: Vec<Location>,
     },
 
+    /// LSP go-to-implementation response
+    LspImplementation {
+        request_id: u64,
+        locations: Vec<Location>,
+    },
+
     /// LSP rename response
     LspRename {
         request_id: u64,

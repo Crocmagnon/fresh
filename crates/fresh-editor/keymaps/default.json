@@ -799,6 +799,13 @@
       "when": "normal"
     },
     {
+      "key": "F12",
+      "modifiers": ["ctrl"],
+      "action": "lsp_implementation",
+      "args": {},
+      "when": "normal"
+    },
+    {
       "key": ".",
       "modifiers": ["alt"],
       "action": "lsp_code_actions",

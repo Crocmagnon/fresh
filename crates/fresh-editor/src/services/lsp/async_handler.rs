@@ -649,6 +649,10 @@ fn extract_capability_summary(caps: &ServerCapabilities) -> ServerCapabilitySumm
             lsp_types::OneOf::Left(v) => *v,
             lsp_types::OneOf::Right(_) => true,
         }),
+        implementation: bool_or_options(&caps.implementation_provider, |p| match p {
+            lsp_types::ImplementationProviderCapability::Simple(v) => *v,
+            lsp_types::ImplementationProviderCapability::Options(_) => true,
+        }),
         references: bool_or_options(&caps.references_provider, |p| match p {
             lsp_types::OneOf::Left(v) => *v,
             lsp_types::OneOf::Right(_) => true,
@@ -756,6 +760,14 @@ enum LspCommand {
 
     /// Request go-to-definition
     GotoDefinition {
+        request_id: u64,
+        uri: Uri,
+        line: u32,
+        character: u32,
+    },
+
+    /// Request go-to-implementation
+    Implementation {
         request_id: u64,
         uri: Uri,
         line: u32,
@@ -1591,6 +1603,86 @@ impl LspState {
                 tracing::debug!("Go-to-definition request failed: {}", e);
                 // Send empty locations on error
                 let _ = self.async_tx.send(AsyncMessage::LspGotoDefinition {
+                    request_id,
+                    locations: vec![],
+                });
+                Err(e)
+            }
+        }
+    }
+
+    /// Handle go-to-implementation request
+    async fn handle_implementation(
+        &self,
+        request_id: u64,
+        uri: Uri,
+        line: u32,
+        character: u32,
+        pending: &PendingRequests,
+    ) -> Result<(), String> {
+        use lsp_types::request::GotoImplementationParams;
+
+        tracing::trace!(
+            "LSP: go-to-implementation request at {}:{}:{}",
+            uri.as_str(),
+            line,
+            character
+        );
+
+        let params = GotoImplementationParams {
+            text_document_position_params: TextDocumentPositionParams {
+                text_document: TextDocumentIdentifier { uri },
+                position: Position { line, character },
+            },
+            work_done_progress_params: WorkDoneProgressParams::default(),
+            partial_result_params: PartialResultParams::default(),
+        };
+
+        // Send request and get response
+        match self
+            .send_request_sequential::<_, Value>(
+                "textDocument/implementation",
+                Some(params),
+                pending,
+            )
+            .await
+        {
+            Ok(result) => {
+                // Parse the response (can be Location, Vec<Location>, or LocationLink)
+                let locations = if let Ok(loc) =
+                    serde_json::from_value::<lsp_types::Location>(result.clone())
+                {
+                    vec![loc]
+                } else if let Ok(locs) =
+                    serde_json::from_value::<Vec<lsp_types::Location>>(result.clone())
+                {
+                    locs
+                } else if let Ok(links) =
+                    serde_json::from_value::<Vec<lsp_types::LocationLink>>(result)
+                {
+                    // Convert LocationLink to Location
+                    links
+                        .into_iter()
+                        .map(|link| lsp_types::Location {
+                            uri: link.target_uri,
+                            range: link.target_selection_range,
+                        })
+                        .collect()
+                } else {
+                    vec![]
+                };
+
+                // Send to main loop
+                let _ = self.async_tx.send(AsyncMessage::LspImplementation {
+                    request_id,
+                    locations,
+                });
+                Ok(())
+            }
+            Err(e) => {
+                tracing::debug!("Go-to-implementation request failed: {}", e);
+                // Send empty locations on error
+                let _ = self.async_tx.send(AsyncMessage::LspImplementation {
                     request_id,
                     locations: vec![],
                 });
@@ -3288,6 +3380,25 @@ impl LspTask {
                         });
                     }
                 }
+                LspCommand::Implementation {
+                    request_id,
+                    uri,
+                    line,
+                    character,
+                } => {
+                    if initialized {
+                        tracing::info!("Processing Implementation request for {}", uri.as_str());
+                        spawn_request!(state, pending, |s, p| s
+                            .handle_implementation(request_id, uri, line, character, &p)
+                            .await);
+                    } else {
+                        tracing::trace!("LSP not initialized, sending empty locations");
+                        let _ = state.async_tx.send(AsyncMessage::LspImplementation {
+                            request_id,
+                            locations: vec![],
+                        });
+                    }
+                }
                 LspCommand::Rename {
                     request_id,
                     uri,
@@ -4728,6 +4839,24 @@ impl LspHandle {
                 character,
             })
             .map_err(|_| "Failed to send goto_definition command".to_string())
+    }
+
+    /// Request go-to-implementation
+    pub fn implementation(
+        &self,
+        request_id: u64,
+        uri: Uri,
+        line: u32,
+        character: u32,
+    ) -> Result<(), String> {
+        self.command_tx
+            .try_send(LspCommand::Implementation {
+                request_id,
+                uri,
+                line,
+                character,
+            })
+            .map_err(|_| "Failed to send implementation command".to_string())
     }
 
     /// Request rename

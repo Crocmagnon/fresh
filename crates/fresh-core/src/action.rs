@@ -324,6 +324,7 @@ pub enum Action {
     LspCompletion,
     LspGotoDefinition,
     LspReferences,
+    LspImplementation,
     LspRename,
     LspHover,
     LspSignatureHelp,

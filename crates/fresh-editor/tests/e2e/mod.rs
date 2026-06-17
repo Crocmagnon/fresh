@@ -108,6 +108,7 @@ pub mod lsp_diagnostic_flow;
 pub mod lsp_env;
 pub mod lsp_global_disable;
 pub mod lsp_goto_definition_readonly;
+pub mod lsp_goto_implementation;
 #[cfg(feature = "plugins")]
 pub mod lsp_indicator_click_bugs;
 pub mod lsp_indicator_click_to_open;

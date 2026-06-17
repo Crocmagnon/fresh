@@ -206,6 +206,10 @@ pub struct Window {
     pub pending_references_request: Option<u64>,
     pub pending_references_symbol: String,
 
+    /// Pending LSP go-to-implementation request id and the symbol name.
+    pub pending_implementation_request: Option<u64>,
+    pub pending_implementation_symbol: String,
+
     /// Pending LSP signature-help request id.
     pub pending_signature_help_request: Option<u64>,
 
@@ -1775,6 +1779,8 @@ impl Window {
             pending_goto_definition_request: None,
             pending_references_request: None,
             pending_references_symbol: String::new(),
+            pending_implementation_request: None,
+            pending_implementation_symbol: String::new(),
             pending_signature_help_request: None,
             pending_code_actions_requests: std::collections::HashSet::new(),
             pending_code_actions_server_names: std::collections::HashMap::new(),

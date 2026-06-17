@@ -877,6 +877,7 @@ impl Editor {
             Action::LspCompletion
             | Action::LspGotoDefinition
             | Action::LspReferences
+            | Action::LspImplementation
             | Action::LspHover
             | Action::None => {
                 // Don't cancel for LSP actions or no-op
@@ -1568,6 +1569,9 @@ impl Editor {
             }
             Action::LspReferences => {
                 self.request_references()?;
+            }
+            Action::LspImplementation => {
+                self.request_implementation()?;
             }
             Action::LspSignatureHelp => {
                 self.request_signature_help();

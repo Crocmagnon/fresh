@@ -622,6 +622,10 @@ interface HookEventMap {
     symbol: string;
     locations: { file: string; line: number; column: number }[];
   };
+  lsp_implementation: {
+    symbol: string;
+    locations: { file: string; line: number; column: number }[];
+  };
   lsp_server_request: {
     language: string;
     method: string;

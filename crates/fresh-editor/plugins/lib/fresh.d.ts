@@ -607,15 +607,39 @@ type FileExplorerDecoration = {
 	*/
 	priority: number;
 };
-type FileExplorerTooltip = {
+type FileExplorerSlotEntry = {
 	/**
-	* Tooltip title shown in the popup border.
+	* File or directory path to override.
 	*/
-	title: string;
+	path: string;
 	/**
-	* Body lines shown inside the popup.
+	* Optional leading-slot override.
 	*/
-	lines: Array<string>;
+	leading: FileExplorerLeadingSlot | null;
+	/**
+	* Explicitly suppress the compatibility leading slot for this path.
+	*/
+	suppressLeading: boolean;
+	/**
+	* Optional trailing-slot override.
+	*/
+	trailing: FileExplorerTrailingSlot | null;
+	/**
+	* Explicitly suppress the compatibility trailing slot for this path.
+	*/
+	suppressTrailing: boolean;
+	/**
+	* Optional filename colour override.
+	*/
+	nameColor: OverlayColorSpec | null;
+	/**
+	* Explicitly suppress compatibility filename colouring for this path.
+	*/
+	suppressNameColor: boolean;
+	/**
+	* Priority for display when multiple overrides exist (higher wins).
+	*/
+	priority: number;
 };
 type FileExplorerLeadingSlot = {
 	/**
@@ -629,7 +653,7 @@ type FileExplorerLeadingSlot = {
 	/**
 	* Minimum display width reserved for the leading slot.
 	*/
-	minWidth?: number;
+	minWidth: number;
 };
 type FileExplorerTrailingSlot = {
 	/**
@@ -643,41 +667,17 @@ type FileExplorerTrailingSlot = {
 	/**
 	* Optional tooltip shown when hovering the trailing slot.
 	*/
-	tooltip?: FileExplorerTooltip | null;
+	tooltip: FileExplorerTooltip | null;
 };
-type FileExplorerSlotEntry = {
+type FileExplorerTooltip = {
 	/**
-	* File or directory path to override.
+	* Tooltip title shown in the popup border.
 	*/
-	path: string;
+	title: string;
 	/**
-	* Optional leading-slot override.
+	* Body lines shown inside the popup.
 	*/
-	leading?: FileExplorerLeadingSlot | null;
-	/**
-	* Explicitly suppress the compatibility leading slot for this path.
-	*/
-	suppressLeading?: boolean;
-	/**
-	* Optional trailing-slot override.
-	*/
-	trailing?: FileExplorerTrailingSlot | null;
-	/**
-	* Explicitly suppress the compatibility trailing slot for this path.
-	*/
-	suppressTrailing?: boolean;
-	/**
-	* Optional filename colour override.
-	*/
-	nameColor?: OverlayColorSpec | null;
-	/**
-	* Explicitly suppress compatibility filename colouring for this path.
-	*/
-	suppressNameColor?: boolean;
-	/**
-	* Priority for display when multiple overrides exist (higher wins).
-	*/
-	priority?: number;
+	lines: Array<string>;
 };
 type FormatterPackConfig = {
 	/**
@@ -2603,10 +2603,9 @@ interface EditorAPI {
 	*/
 	clearFileExplorerDecorations(namespace: string): boolean;
 	/**
-	* Set file explorer slot overrides for a namespace. Any omitted fields
-	* fall back to the editor's default file-explorer providers.
+	* Set file explorer slot overrides for a namespace
 	*/
-	setFileExplorerSlots(namespace: string, slots: FileExplorerSlotEntry[]): boolean;
+	setFileExplorerSlots(namespace: string, slots: Record<string, unknown>[]): boolean;
 	/**
 	* Clear file explorer slot overrides for a namespace
 	*/
@@ -3568,6 +3567,14 @@ interface HookEventMap {
 		count: number;
 	};
 	lsp_references: {
+		symbol: string;
+		locations: {
+			file: string;
+			line: number;
+			column: number;
+		}[];
+	};
+	lsp_implementation: {
 		symbol: string;
 		locations: {
 			file: string;
