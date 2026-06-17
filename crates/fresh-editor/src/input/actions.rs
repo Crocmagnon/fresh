@@ -2765,6 +2765,7 @@ pub fn action_to_events(
         | Action::LspCompletion
         | Action::LspGotoDefinition
         | Action::LspReferences
+        | Action::LspImplementation
         | Action::LspRename
         | Action::LspHover
         | Action::LspSignatureHelp

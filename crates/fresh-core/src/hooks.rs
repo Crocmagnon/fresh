@@ -195,6 +195,14 @@ pub enum HookArgs {
         locations: Vec<LspLocation>,
     },
 
+    /// LSP go-to-implementation response received
+    LspImplementation {
+        /// The symbol name being queried
+        symbol: String,
+        /// The locations where the symbol is implemented
+        locations: Vec<LspLocation>,
+    },
+
     /// View transform request
     ViewTransformRequest {
         buffer_id: BufferId,

@@ -1056,6 +1056,13 @@ static COMMAND_DEFS: &[CommandDef] = &[
         custom_contexts: &[],
     },
     CommandDef {
+        name_key: "cmd.goto_implementation",
+        desc_key: "cmd.goto_implementation_desc",
+        action: || Action::LspImplementation,
+        contexts: &[Normal],
+        custom_contexts: &[],
+    },
+    CommandDef {
         name_key: "cmd.show_signature_help",
         desc_key: "cmd.show_signature_help_desc",
         action: || Action::LspSignatureHelp,

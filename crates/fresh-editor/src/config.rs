@@ -3239,6 +3239,13 @@ impl MenuConfig {
                         when: Some(context_keys::HAS_BUFFER.to_string()),
                         checkbox: None,
                     },
+                    MenuItem::Action {
+                        label: t!("menu.go.goto_implementation").to_string(),
+                        action: "lsp_implementation".to_string(),
+                        args: HashMap::new(),
+                        when: Some(context_keys::HAS_BUFFER.to_string()),
+                        checkbox: None,
+                    },
                     MenuItem::Separator { separator: true },
                     MenuItem::Action {
                         label: t!("menu.go.next_buffer").to_string(),
@@ -3287,6 +3294,13 @@ impl MenuConfig {
                     MenuItem::Action {
                         label: t!("menu.lsp.find_references").to_string(),
                         action: "lsp_references".to_string(),
+                        args: HashMap::new(),
+                        when: Some(context_keys::LSP_AVAILABLE.to_string()),
+                        checkbox: None,
+                    },
+                    MenuItem::Action {
+                        label: t!("menu.lsp.goto_implementation").to_string(),
+                        action: "lsp_implementation".to_string(),
                         args: HashMap::new(),
                         when: Some(context_keys::LSP_AVAILABLE.to_string()),
                         checkbox: None,

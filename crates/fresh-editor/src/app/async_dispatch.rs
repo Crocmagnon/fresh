@@ -243,6 +243,14 @@ impl Editor {
                         tracing::error!("Error handling goto definition response: {}", e);
                     }
                 }
+                AsyncMessage::LspImplementation {
+                    request_id,
+                    locations,
+                } => {
+                    if let Err(e) = self.handle_implementation_response(request_id, locations) {
+                        tracing::error!("Error handling implementation response: {}", e);
+                    }
+                }
                 AsyncMessage::LspRename { request_id, result } => {
                     if let Err(e) = self.handle_rename_response(request_id, result) {
                         tracing::error!("Error handling rename response: {}", e);
